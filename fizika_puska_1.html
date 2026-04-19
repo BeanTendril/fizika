@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fizika Puska – Elektromosság</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0d0f14; --bg2:#13161e; --bg3:#1a1e28;
+  --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.14);
+  --text:#e8eaf0; --text2:#8b90a0; --text3:#555a6b;
+  --blue:#4a9eff; --blue-d:rgba(74,158,255,0.13); --blue-b:rgba(74,158,255,0.32);
+  --green:#3ecf8e; --green-d:rgba(62,207,142,0.13); --green-b:rgba(62,207,142,0.32);
+  --amber:#f5a623; --amber-d:rgba(245,166,35,0.13); --amber-b:rgba(245,166,35,0.32);
+  --red:#ff6b6b; --red-d:rgba(255,107,107,0.11);
+  --purple:#a78bfa; --purple-d:rgba(167,139,250,0.13);
+  --mono:'Space Mono',monospace; --display:'Syne',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--display);min-height:100vh;line-height:1.65;font-size:16px}
+
+.header{padding:1.1rem 1rem 0.7rem;border-bottom:1px solid var(--border);display:flex;align-items:baseline;gap:0.75rem;flex-wrap:wrap}
+.header h1{font-size:clamp(1.1rem,4vw,1.7rem);font-weight:800;letter-spacing:-0.03em}
+.header-sub{font-family:var(--mono);font-size:0.6rem;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase}
+
+.tab-bar{display:flex;padding:0 0.5rem;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab-btn{font-family:var(--mono);font-size:0.6rem;letter-spacing:0.07em;text-transform:uppercase;padding:0.7rem 0.85rem;border:none;background:none;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .2s,border-color .2s;margin-bottom:-1px;flex-shrink:0}
+.tab-btn:hover{color:var(--text2)}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+.tab-content{display:none;padding:0.85rem;max-width:860px}
+.tab-content.active{display:block}
+
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:0.9rem 1rem;margin-bottom:0.75rem}
+.card-title{font-size:0.58rem;font-family:var(--mono);letter-spacing:0.14em;text-transform:uppercase;color:var(--text3);margin-bottom:0.6rem}
+
+.formula{font-family:var(--mono);font-size:0.88rem;font-weight:700;color:var(--text);background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:0.32rem 0.7rem;display:inline-block;margin:3px}
+.formula.blue{color:var(--blue);border-color:var(--blue-b);background:var(--blue-d)}
+.formula.green{color:var(--green);border-color:var(--green-b);background:var(--green-d)}
+.formula.amber{color:var(--amber);border-color:var(--amber-b);background:var(--amber-d)}
+
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:0.8rem}
+th{font-family:var(--mono);font-size:0.56rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);padding:0.4rem 0.6rem;text-align:left;border-bottom:1px solid var(--border2)}
+td{padding:0.48rem 0.6rem;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+td:first-child{font-family:var(--mono);font-weight:700;color:var(--text);white-space:nowrap;min-width:90px}
+tr:last-child td{border-bottom:none}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0.65rem}
+@media(max-width:500px){.grid2{grid-template-columns:1fr}}
+
+.badge{font-family:var(--mono);font-size:0.56rem;letter-spacing:0.08em;text-transform:uppercase;padding:2px 7px;border-radius:4px;display:inline-block;margin-left:6px;vertical-align:middle}
+.badge.blue{background:var(--blue-d);color:var(--blue);border:1px solid var(--blue-b)}
+.badge.green{background:var(--green-d);color:var(--green);border:1px solid var(--green-b)}
+
+.note{font-size:0.79rem;color:var(--text2);background:var(--bg3);border-left:3px solid var(--blue);border-radius:0 6px 6px 0;padding:0.55rem 0.85rem;margin-top:0.6rem}
+.note.red{border-left-color:var(--red)}
+.note.green{border-left-color:var(--green)}
+
+.calc-label{font-family:var(--mono);font-size:0.56rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:3px}
+input[type=number],select{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:0.85rem;padding:0.38rem 0.6rem;width:100%;max-width:115px;outline:none;transition:border-color .2s;-webkit-appearance:none;-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+input[type=number]:focus,select:focus{border-color:var(--blue)}
+select{max-width:210px;cursor:pointer}
+.calc-grid{display:flex;gap:0.65rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:0.75rem}
+.calc-field{display:flex;flex-direction:column}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:7px;margin-bottom:0.55rem}
+.stat-box{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.8rem}
+.stat-val{font-family:var(--mono);font-size:1.2rem;font-weight:700;color:var(--text)}
+.stat-unit{font-family:var(--mono);font-size:0.62rem;color:var(--text3)}
+.formula-result{font-family:var(--mono);font-size:0.7rem;color:var(--text3);padding:0.3rem 0}
+button.action{background:var(--blue-d);border:1px solid var(--blue-b);color:var(--blue);border-radius:6px;padding:0.38rem 0.8rem;font-family:var(--mono);font-size:0.65rem;letter-spacing:0.06em;cursor:pointer;transition:background .15s;white-space:nowrap}
+button.action:hover{background:rgba(74,158,255,0.22)}
+
+.triangle-wrap{display:flex;gap:1.25rem;align-items:center;flex-wrap:wrap}
+
+.hatas-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0.65rem;margin-bottom:0.75rem}
+.hatas-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:0.85rem 1rem}
+.hatas-card.ho{border-left:3px solid var(--red)}
+.hatas-card.kem{border-left:3px solid var(--green)}
+.hatas-card.bio{border-left:3px solid var(--purple)}
+.hatas-icon{font-size:1.25rem;margin-bottom:0.25rem}
+.hatas-title{font-size:0.88rem;font-weight:700;margin-bottom:0.2rem}
+.hatas-desc{font-size:0.74rem;color:var(--text2);line-height:1.5}
+
+.tag-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:0.6rem}
+.tag{font-family:var(--mono);font-size:0.62rem;padding:3px 8px;border-radius:5px;border:1px solid}
+.tag.ho{background:var(--red-d);color:var(--red);border-color:rgba(255,107,107,0.25)}
+.tag.kem{background:var(--green-d);color:var(--green);border-color:var(--green-b)}
+.tag.bio{background:var(--purple-d);color:var(--purple);border-color:rgba(167,139,250,0.25)}
+.tag.mixed{background:var(--amber-d);color:var(--amber);border-color:var(--amber-b)}
+.tag.led{background:var(--blue-d);color:var(--blue);border-color:var(--blue-b)}
+
+/* KÉRDÉSEK */
+.kerdes-section-title{font-family:var(--mono);font-size:0.56rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text3);padding:0.9rem 0 0.35rem}
+.kerdes-item{border-bottom:1px solid var(--border)}
+.kerdes-item:last-child{border-bottom:none}
+.kerdes-q{display:flex;gap:0.6rem;padding:0.7rem 0.5rem;cursor:pointer;align-items:flex-start;border-radius:6px;transition:background .12s;user-select:none}
+.kerdes-q:hover{background:var(--bg3)}
+.kerdes-num{font-family:var(--mono);font-size:0.58rem;color:var(--text3);min-width:22px;padding-top:3px;flex-shrink:0}
+.kerdes-body{flex:1}
+.kerdes-text{font-size:0.82rem;color:var(--text2);line-height:1.55}
+.kerdes-check{width:16px;height:16px;border:1.5px solid var(--border2);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px;transition:background .15s,border-color .15s;cursor:pointer}
+.kerdes-item.done .kerdes-check{background:var(--green);border-color:var(--green)}
+.kerdes-item.done .kerdes-check::after{content:'✓';color:#0d0f14;font-size:0.6rem;font-weight:700}
+.kerdes-item.done .kerdes-text{text-decoration:line-through;color:var(--text3)}
+
+.answer-panel{max-height:0;overflow:hidden;transition:max-height .38s ease,opacity .3s ease;opacity:0}
+.answer-panel.open{max-height:1000px;opacity:1}
+.answer-inner{margin:0 0.5rem 0.65rem 2.2rem;background:var(--bg3);border-left:2px solid var(--blue);border-radius:0 6px 6px 0;padding:0.6rem 0.8rem;font-size:0.78rem;color:var(--text2);line-height:1.65}
+.answer-inner strong{color:var(--text);font-weight:600}
+.answer-inner .af{font-family:var(--mono);font-size:0.76rem;color:var(--amber);display:block;margin-top:5px}
+.kerdes-item.done .answer-inner{border-left-color:var(--green)}
+
+.progress-label{font-family:var(--mono);font-size:0.62rem;color:var(--text3);margin-bottom:3px}
+.progress-bar-wrap{background:var(--bg3);border-radius:99px;height:3px;margin:0.35rem 0 0.75rem;overflow:hidden}
+.progress-bar{height:100%;background:var(--green);border-radius:99px;transition:width .3s}
+
+svg text{font-family:var(--mono)}
+
+@media(max-width:420px){
+  .tab-btn{padding:0.6rem 0.6rem;font-size:0.55rem}
+  .card{padding:0.75rem 0.8rem}
+  .formula{font-size:0.75rem}
+  input[type=number]{max-width:95px}
+  .answer-inner{margin-left:1.4rem}
+  td:first-child{white-space:normal;min-width:70px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚡ Fizika Puska</h1>
+  <span class="header-sub">Elektromosság · Témazáró</span>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('ohm',this)">Ohm törvénye</button>
+  <button class="tab-btn" onclick="showTab('soros',this)">Soros</button>
+  <button class="tab-btn" onclick="showTab('parhuzamos',this)">Párhuzamos</button>
+  <button class="tab-btn" onclick="showTab('szamolo',this)">Számológép</button>
+  <button class="tab-btn" onclick="showTab('hatasok',this)">Áram hatásai</button>
+  <button class="tab-btn" onclick="showTab('kerdesek',this)">Kérdések ✓</button>
+</div>
+
+<!-- ═══ OHM ═══ -->
+<div id="tab-ohm" class="tab-content active">
+  <div class="card">
+    <div class="card-title">Ohm törvénye – képletek</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:0.8rem">
+      <span class="formula blue">U = R · I</span>
+      <span class="formula green">I = U / R</span>
+      <span class="formula amber">R = U / I</span>
+    </div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Jel</th><th>Mennyiség</th><th>Egység</th><th>Rövidítés</th></tr>
+      <tr><td>U</td><td>Feszültség</td><td>Volt</td><td>V</td></tr>
+      <tr><td>I</td><td>Áramerősség</td><td>Amper</td><td>A</td></tr>
+      <tr><td>R</td><td>Ellenállás</td><td>Ohm</td><td>Ω</td></tr>
+      <tr><td>P</td><td>Teljesítmény</td><td>Watt</td><td>W</td></tr>
+    </table></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Teljesítmény képletei</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap">
+      <span class="formula">P = U · I</span>
+      <span class="formula">P = I² · R</span>
+      <span class="formula">P = U² / R</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Memóriaháromszög</div>
+    <div class="triangle-wrap">
+      <svg width="140" height="128" viewBox="0 0 160 140">
+        <polygon points="80,10 10,130 150,130" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+        <line x1="10" y1="130" x2="150" y2="130" stroke="rgba(255,255,255,0.18)" stroke-width="2" stroke-dasharray="5 4"/>
+        <circle cx="80" cy="22" r="18" fill="rgba(74,158,255,0.15)" stroke="rgba(74,158,255,0.4)" stroke-width="1"/>
+        <text x="80" y="28" text-anchor="middle" fill="#4a9eff" font-size="16" font-weight="700">U</text>
+        <circle cx="22" cy="122" r="18" fill="rgba(62,207,142,0.15)" stroke="rgba(62,207,142,0.4)" stroke-width="1"/>
+        <text x="22" y="128" text-anchor="middle" fill="#3ecf8e" font-size="16" font-weight="700">I</text>
+        <circle cx="138" cy="122" r="18" fill="rgba(245,166,35,0.15)" stroke="rgba(245,166,35,0.4)" stroke-width="1"/>
+        <text x="138" y="128" text-anchor="middle" fill="#f5a623" font-size="16" font-weight="700">R</text>
+      </svg>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <span class="formula blue" style="font-size:0.8rem">U = R · I</span>
+        <span class="formula green" style="font-size:0.8rem">I = U / R</span>
+        <span class="formula amber" style="font-size:0.8rem">R = U / I</span>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Alapfogalmak</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Fogalom</th><th>Leírás</th></tr>
+      <tr><td>Elektromos áram</td><td>Töltéshordozók (elektronok) rendezett mozgása a vezető anyagban</td></tr>
+      <tr><td>Áramerősség</td><td>Egységnyi idő alatt az áramköri keresztmetszeten átáramló töltés. <span style="font-family:var(--mono);color:var(--blue)">I = Q / t</span></td></tr>
+      <tr><td>Ellenállás</td><td>Az anyag áramvezetéssel szembeni akadályozó képessége – függ az anyagtól, geometriától, hőmérséklettől</td></tr>
+      <tr><td>Áram iránya</td><td>Technikai iránya: + pólustól a − pólus felé. Az elektronok mozgása ezzel ellentétes.</td></tr>
+    </table></div>
+  </div>
+</div>
+
+<!-- ═══ SOROS ═══ -->
+<div id="tab-soros" class="tab-content">
+  <div class="card">
+    <div class="card-title">Soros kapcsolás <span class="badge blue">R₁ — R₂ — R₃</span></div>
+    <p style="font-size:0.81rem;color:var(--text2);margin-bottom:0.8rem">Az ellenállások egymás után kapcsolódnak. Mindegyiken <strong style="color:var(--text)">ugyanakkora áram</strong> folyik át.</p>
+    <svg width="100%" viewBox="0 0 580 105" style="margin-bottom:0.7rem;display:block">
+      <defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#4a9eff" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+      <line x1="10" y1="42" x2="570" y2="42" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+      <line x1="10" y1="80" x2="570" y2="80" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+      <line x1="10" y1="42" x2="10" y2="80" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+      <line x1="570" y1="42" x2="570" y2="80" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+      <line x1="10" y1="54" x2="10" y2="68" stroke="white" stroke-width="3.5"/>
+      <line x1="3" y1="59" x2="17" y2="59" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+      <line x1="5" y1="65" x2="15" y2="65" stroke="white" stroke-width="2"/>
+      <text x="4" y="78" fill="rgba(255,255,255,0.3)" font-size="8">U</text>
+      <rect x="105" y="29" width="88" height="26" rx="5" fill="rgba(74,158,255,0.13)" stroke="rgba(74,158,255,0.4)" stroke-width="1"/>
+      <text x="149" y="45" text-anchor="middle" fill="#4a9eff" font-size="13" font-weight="700">R₁</text>
+      <text x="149" y="22" text-anchor="middle" fill="rgba(74,158,255,0.7)" font-size="10">U₁</text>
+      <rect x="246" y="29" width="88" height="26" rx="5" fill="rgba(62,207,142,0.13)" stroke="rgba(62,207,142,0.4)" stroke-width="1"/>
+      <text x="290" y="45" text-anchor="middle" fill="#3ecf8e" font-size="13" font-weight="700">R₂</text>
+      <text x="290" y="22" text-anchor="middle" fill="rgba(62,207,142,0.7)" font-size="10">U₂</text>
+      <rect x="387" y="29" width="88" height="26" rx="5" fill="rgba(245,166,35,0.13)" stroke="rgba(245,166,35,0.4)" stroke-width="1"/>
+      <text x="431" y="45" text-anchor="middle" fill="#f5a623" font-size="13" font-weight="700">R₃</text>
+      <text x="431" y="22" text-anchor="middle" fill="rgba(245,166,35,0.7)" font-size="10">U₃</text>
+      <line x1="32" y1="42" x2="100" y2="42" stroke="#4a9eff" stroke-width="1.2" marker-end="url(#arr)" opacity="0.8"/>
+      <text x="66" y="37" text-anchor="middle" fill="#4a9eff" font-size="10">I</text>
+    </svg>
+    <div class="grid2" style="margin-bottom:0.7rem">
+      <div><div class="card-title">Eredő ellenállás</div><span class="formula">R = R₁ + R₂ + R₃</span></div>
+      <div><div class="card-title">Áram (mindenhol egyenlő)</div><span class="formula">I = I₁ = I₂ = I₃</span></div>
+      <div><div class="card-title">Feszültség (összeadódik)</div><span class="formula">U = U₁ + U₂ + U₃</span></div>
+      <div><div class="card-title">Részfeszültség</div><span class="formula">U₁ = I · R₁</span></div>
+    </div>
+    <div class="note red">⚠ Ha <strong>egy ellenállás megszakad</strong>, az egész kör megszakad. Az eredő ellenállás mindig <strong>nagyobb</strong>, mint bármelyik részeleké.</div>
+  </div>
+</div>
+
+<!-- ═══ PÁRHUZAMOS ═══ -->
+<div id="tab-parhuzamos" class="tab-content">
+  <div class="card">
+    <div class="card-title">Párhuzamos kapcsolás <span class="badge green">R₁ ∥ R₂ ∥ R₃</span></div>
+    <p style="font-size:0.81rem;color:var(--text2);margin-bottom:0.8rem">Az ellenállások párhuzamosan kapcsolódnak. Mindegyiken <strong style="color:var(--text)">ugyanakkora feszültség</strong> van.</p>
+    <svg width="100%" viewBox="0 0 580 155" style="margin-bottom:0.7rem;display:block">
+      <defs><marker id="arr2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#4a9eff" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+      <line x1="52" y1="16" x2="555" y2="16" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+      <line x1="52" y1="136" x2="555" y2="136" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+      <line x1="52" y1="16" x2="52" y2="136" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+      <line x1="555" y1="16" x2="555" y2="136" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+      <line x1="52" y1="51" x2="52" y2="101" stroke="white" stroke-width="3.5"/>
+      <line x1="43" y1="60" x2="61" y2="60" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+      <line x1="46" y1="70" x2="58" y2="70" stroke="white" stroke-width="2"/>
+      <text x="36" y="85" fill="rgba(255,255,255,0.3)" font-size="8">U</text>
+      <line x1="168" y1="16" x2="168" y2="136" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+      <line x1="308" y1="16" x2="308" y2="136" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+      <line x1="448" y1="16" x2="448" y2="136" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+      <rect x="124" y="60" width="88" height="26" rx="5" fill="rgba(74,158,255,0.13)" stroke="rgba(74,158,255,0.4)" stroke-width="1"/>
+      <text x="168" y="76" text-anchor="middle" fill="#4a9eff" font-size="13" font-weight="700">R₁</text>
+      <text x="168" y="50" text-anchor="middle" fill="rgba(74,158,255,0.7)" font-size="10">I₁</text>
+      <rect x="264" y="60" width="88" height="26" rx="5" fill="rgba(62,207,142,0.13)" stroke="rgba(62,207,142,0.4)" stroke-width="1"/>
+      <text x="308" y="76" text-anchor="middle" fill="#3ecf8e" font-size="13" font-weight="700">R₂</text>
+      <text x="308" y="50" text-anchor="middle" fill="rgba(62,207,142,0.7)" font-size="10">I₂</text>
+      <rect x="404" y="60" width="88" height="26" rx="5" fill="rgba(245,166,35,0.13)" stroke="rgba(245,166,35,0.4)" stroke-width="1"/>
+      <text x="448" y="76" text-anchor="middle" fill="#f5a623" font-size="13" font-weight="700">R₃</text>
+      <text x="448" y="50" text-anchor="middle" fill="rgba(245,166,35,0.7)" font-size="10">I₃</text>
+      <line x1="70" y1="7" x2="140" y2="7" stroke="#4a9eff" stroke-width="1.2" marker-end="url(#arr2)" opacity="0.8"/>
+      <text x="105" y="4" text-anchor="middle" fill="#4a9eff" font-size="10">I</text>
+    </svg>
+    <div class="grid2" style="margin-bottom:0.7rem">
+      <div><div class="card-title">Eredő ellenállás (reciprok!)</div><span class="formula">1/R = 1/R₁ + 1/R₂ + 1/R₃</span></div>
+      <div><div class="card-title">Feszültség (mindenhol egyenlő)</div><span class="formula">U = U₁ = U₂ = U₃</span></div>
+      <div><div class="card-title">Áramok (összeadódnak)</div><span class="formula">I = I₁ + I₂ + I₃</span></div>
+      <div><div class="card-title">Két ellenállás esetén</div><span class="formula">R = (R₁·R₂)/(R₁+R₂)</span></div>
+    </div>
+    <div class="note green">✓ Ha <strong>egy elem kiesik</strong>, a többi megy tovább. Az eredő ellenállás mindig <strong>kisebb</strong>, mint a legkisebb részeleké.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Összehasonlítás</div>
+    <div class="tbl-wrap"><table>
+      <tr><th></th><th>Soros</th><th>Párhuzamos</th></tr>
+      <tr><td>Áram</td><td>I₁ = I₂ = I₃ (egyenlő)</td><td>I = I₁ + I₂ + I₃ (összeadódik)</td></tr>
+      <tr><td>Feszültség</td><td>U = U₁ + U₂ + U₃ (összeadódik)</td><td>U₁ = U₂ = U₃ (egyenlő)</td></tr>
+      <tr><td>Ellenállás</td><td>R = R₁ + R₂ … (nő)</td><td>1/R = 1/R₁ + … (csökken)</td></tr>
+      <tr><td>Ha egy kiesik</td><td style="color:var(--red)">Minden megáll ✗</td><td style="color:var(--green)">Többi megy ✓</td></tr>
+    </table></div>
+  </div>
+</div>
+
+<!-- ═══ SZÁMOLÓGÉP ═══ -->
+<div id="tab-szamolo" class="tab-content">
+  <div class="card">
+    <div class="card-title">Ohm törvény számológép</div>
+    <p style="font-size:0.78rem;color:var(--text2);margin-bottom:0.8rem">Adj meg bármely két értéket – a harmadikat kiszámolja.</p>
+    <div class="calc-grid">
+      <div class="calc-field"><div class="calc-label">U – Feszültség (V)</div><input type="number" id="inp-u" placeholder="pl. 12" oninput="calc()" min="0" step="any"></div>
+      <div class="calc-field"><div class="calc-label">I – Áramerősség (A)</div><input type="number" id="inp-i" placeholder="pl. 2" oninput="calc()" min="0" step="any"></div>
+      <div class="calc-field"><div class="calc-label">R – Ellenállás (Ω)</div><input type="number" id="inp-r" placeholder="pl. 6" oninput="calc()" min="0" step="any"></div>
+      <button class="action" onclick="clearOhm()">Törlés</button>
+    </div>
+    <div id="ohm-result" style="display:none">
+      <div class="stat-grid">
+        <div class="stat-box"><div class="calc-label">Feszültség</div><div class="stat-val" id="out-u">—</div><div class="stat-unit">V</div></div>
+        <div class="stat-box"><div class="calc-label">Áramerősség</div><div class="stat-val" id="out-i">—</div><div class="stat-unit">A</div></div>
+        <div class="stat-box"><div class="calc-label">Ellenállás</div><div class="stat-val" id="out-r">—</div><div class="stat-unit">Ω</div></div>
+        <div class="stat-box"><div class="calc-label">Teljesítmény</div><div class="stat-val" id="out-p">—</div><div class="stat-unit">W</div></div>
+      </div>
+      <div class="formula-result" id="ohm-formula"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Ellenállás számológép</div>
+    <div style="margin-bottom:0.7rem">
+      <div class="calc-label" style="margin-bottom:3px">Kapcsolás típusa</div>
+      <select id="conn-type" onchange="calcR()">
+        <option value="soros">Soros kapcsolás</option>
+        <option value="parhuzamos">Párhuzamos kapcsolás</option>
+      </select>
+    </div>
+    <div class="calc-grid">
+      <div class="calc-field"><div class="calc-label">R₁ (Ω)</div><input type="number" id="r1" placeholder="pl. 10" oninput="calcR()" min="0" step="any"></div>
+      <div class="calc-field"><div class="calc-label">R₂ (Ω)</div><input type="number" id="r2" placeholder="pl. 20" oninput="calcR()" min="0" step="any"></div>
+      <div class="calc-field"><div class="calc-label">R₃ (Ω, opció)</div><input type="number" id="r3" placeholder="pl. 30" oninput="calcR()" min="0" step="any"></div>
+    </div>
+    <div id="r-result" style="display:none">
+      <div class="stat-box" style="display:inline-block;min-width:140px">
+        <div class="calc-label">Eredő ellenállás</div>
+        <div class="stat-val" id="r-out">—</div><div class="stat-unit">Ω</div>
+      </div>
+      <div class="formula-result" id="r-formula"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ HATÁSOK ═══ -->
+<div id="tab-hatasok" class="tab-content">
+  <div class="hatas-grid">
+    <div class="hatas-card ho"><div class="hatas-icon">🔥</div><div class="hatas-title" style="color:var(--red)">Hőhatás</div><div class="hatas-desc">Az áram hőt fejleszt a vezető ellenállásában.<br>Joule–Lenz: <strong>Q = I²·R·t</strong></div></div>
+    <div class="hatas-card kem"><div class="hatas-icon">⚗️</div><div class="hatas-title" style="color:var(--green)">Kémiai hatás</div><div class="hatas-desc">Elektrolitokban ionok rendezett mozgása. Elektrolízis során az anyag szétbomlik.</div></div>
+    <div class="hatas-card bio"><div class="hatas-icon">⚡</div><div class="hatas-title" style="color:var(--purple)">Biológiai hatás</div><div class="hatas-desc">Izomösszehúzódást, fájdalmat, szívritmus-zavart okozhat. Galvani fedezte fel.</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔥 Hőhatás – részletek</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Kérdés</th><th>Válasz</th></tr>
+      <tr><td>Joule–Lenz törvény</td><td><span style="font-family:var(--mono);color:var(--amber)">Q = I² · R · t</span></td></tr>
+      <tr><td>Miért keletkezik hő?</td><td>Az elektronok ütköznek a kristályrácsban lévő atomokkal → kinetikus energiájuk hővé alakul</td></tr>
+      <tr><td>Villanykörte</td><td>A wolfram szál (~3000 °C-ra) hevül fel, izzik és fényt ad ki. A bevitt energia ~95%-a hővé alakul.</td></tr>
+      <tr><td>Energiamegtakarítás</td><td>LED izzó, A+++ gépek, teli gép indítása, készenléti mód kikapcsolása</td></tr>
+    </table></div>
+    <div class="tag-row">
+      <span class="tag ho">vízforraló</span><span class="tag ho">vasaló</span><span class="tag ho">hagyományos izzó</span>
+      <span class="tag ho">kenyérpirító</span><span class="tag ho">hajszárító</span><span class="tag ho">elektr. főzőlap</span>
+      <span class="tag ho">hajvasaló</span><span class="tag ho">villanysütő</span><span class="tag ho">villanybojler</span>
+      <span class="tag mixed">mikrohullámú sütő</span><span class="tag mixed">mosógép</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⚗️ Kémiai hatás – részletek</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Fogalom</th><th>Leírás</th></tr>
+      <tr><td>Elektrolit</td><td>Ionokat tartalmazó oldat vagy olvadék, amely ionok mozgásával vezeti az áramot (pl. sóoldat)</td></tr>
+      <tr><td>Ionok mozgása</td><td>Ionok (töltött részecskék) rendezett mozgása – ez az áram az elektrolitban</td></tr>
+      <tr><td>Elektróda</td><td>Fémes vezető, amelyen az áram belép/kilép. <strong>Anód (+), Katód (−)</strong></td></tr>
+      <tr><td>Elektrolízis</td><td>Áram hatására bekövetkező kémiai bomlás elektrolitban (pl. víz → H₂ + O₂)</td></tr>
+    </table></div>
+    <div class="tag-row">
+      <span class="tag kem">vízbontó készülék</span><span class="tag kem">alumíniumgyártás</span>
+      <span class="tag kem">galvánelemek</span><span class="tag kem">akkumulátor</span><span class="tag kem">galvanizálás</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⚡ Biológiai hatás – részletek</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Kérdés</th><th>Válasz</th></tr>
+      <tr><td>Felfedező</td><td>Luigi Galvani (18. sz.) – békalábkísérlet: szikra hatására a béka lába összehúzódott</td></tr>
+      <tr><td>Miért hat?</td><td>A test elektrolitot tartalmaz (vér, szövetfolyadék) → vezeti az áramot</td></tr>
+      <tr><td>~1 mA</td><td>Bizsergés</td></tr>
+      <tr><td>10–25 mA</td><td>Görcs – nem tudja elengedni a vezéket</td></tr>
+      <tr><td>≥ 100 mA</td><td>Szívkamra-fibrilláció → halálos lehet</td></tr>
+    </table></div>
+    <div class="tag-row">
+      <span class="tag bio">defibrillátor</span><span class="tag bio">pacemaker</span><span class="tag bio">EKG</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Összes eszköz összefoglalva</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Eszköz</th><th>Hatás</th></tr>
+      <tr><td>vízforraló, vasaló, kenyérpirító, izzó, hajszárító, hajvasaló, főzőlap, villanysütő, bojler</td><td style="color:var(--red)">Hőhatás 🔥</td></tr>
+      <tr><td>vízbontó, alumíniumgyártás, galvánelemek, akkumulátor, galvanizálás</td><td style="color:var(--green)">Kémiai hatás ⚗️</td></tr>
+      <tr><td>defibrillátor, pacemaker, EKG</td><td style="color:var(--purple)">Biológiai hatás ⚡</td></tr>
+      <tr><td>mikrohullámú sütő, mosógép</td><td style="color:var(--amber)">Hő + egyéb</td></tr>
+      <tr><td>LED fényforrás</td><td style="color:var(--blue)">Nem hőhatás – elektrolumineszcencia 💡</td></tr>
+    </table></div>
+  </div>
+</div>
+
+<!-- ═══ KÉRDÉSEK ═══ -->
+<div id="tab-kerdesek" class="tab-content">
+  <div class="card">
+    <div class="card-title">Haladás</div>
+    <div class="progress-label" id="prog-label">0 / 0 teljesítve</div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="prog-bar" style="width:0%"></div></div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <button class="action" onclick="resetAll()">Visszaállítás</button>
+      <button class="action" onclick="expandAll()">Összes kinyit</button>
+      <button class="action" onclick="collapseAll()">Összes becsuk</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <p style="font-size:0.75rem;color:var(--text3);margin-bottom:0.5rem">💡 Kattints a kérdésre a válasz megjelenítéséhez. A jelölőn kattintva pipálhatod ki.</p>
+
+    <div class="kerdes-section-title">🔥 Hőhatás</div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">01</span>
+        <div class="kerdes-body"><div class="kerdes-text">Sorolj fel hétköznapi eszközöket, amelyek az elektromos áram hőhatása alapján működnek!</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner">Vízforraló, vasaló, kenyérpirító, hajszárító, hajvasaló, elektromos főzőlap, villanysütő, villanybojler, hagyományos izzó.<br><em style="font-size:0.73rem">(A LED és a mikrohullámú sütő nem hőhatáson alapul!)</em></div></div>
+    </div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">02</span>
+        <div class="kerdes-body"><div class="kerdes-text">Hogyan keletkezik a hő az elektromos áram hatására?</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner">Az elektronok mozgás közben <strong>ütköznek a kristályrácsban lévő atomokkal</strong>. Az ütközések során kinetikus energiájukat a rácsatomokra adják át, ami rezgést – vagyis hőt – kelt.</div></div>
+    </div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">03</span>
+        <div class="kerdes-body"><div class="kerdes-text">Melyik természeti törvény és hogyan érvényesül a hőhatásban?</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner"><strong>Joule–Lenz törvény:</strong> az áram által fejlesztett hőenergia arányos az áramerősség négyzetével, az ellenállással és az idővel.<span class="af">Q = I² · R · t</span>Minél nagyobb az ellenállás vagy az áram, annál több hő keletkezik egységnyi idő alatt.</div></div>
+    </div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">04</span>
+        <div class="kerdes-body"><div class="kerdes-text">A villanykörte működése miért kapcsolódik a hőhatáshoz?</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner">A hagyományos izzóban egy vékony <strong>wolframszál</strong> van, amelynek nagy az ellenállása. Az áram annyira felhevíti (~3000 °C-ra), hogy <strong>izzani kezd és fényt bocsát ki</strong>. A bevitt energia ~95%-a viszont hővé alakul → ezért pazarlóbb a LED-nél.</div></div>
+    </div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">05</span>
+        <div class="kerdes-body"><div class="kerdes-text">Milyen módon tudsz energiát spórolni az elektromos eszközök használata során?</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner">
+        • <strong>LED izzó</strong> használata (90%-kal kevesebb hőveszteség)<br>
+        • <strong>Energiatakarékos gépek</strong> (A+++ besorolás)<br>
+        • <strong>Teli mosás/mosogatógép</strong> – ne fél adaggal indítsuk<br>
+        • <strong>Készenléti módból való kikapcsolás</strong><br>
+        • <strong>Rövidebb, alacsonyabb hőfokú mosás</strong>
+      </div></div>
+    </div>
+
+    <div class="kerdes-section-title">⚗️ Kémiai hatás</div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">06</span>
+        <div class="kerdes-body"><div class="kerdes-text">Mi az elektrolit?</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner"><strong>Elektrolit:</strong> ionokat tartalmazó oldat vagy olvadék, amely képes az elektromos áramot <strong>ionok mozgásával</strong> vezetni. Pl. sóoldat, sósav, kénsavoldat, olvadt NaCl.</div></div>
+    </div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">07</span>
+        <div class="kerdes-body"><div class="kerdes-text">Elektrolitban milyen részecskék rendezett mozgása az elektromos áram?</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner"><strong>Ionok</strong> rendezett mozgása – ellentétben a fémvezetőkkel, ahol szabad elektronok mozognak. A pozitív ionok (kationok) a katód (−) felé, a negatív ionok (anionok) az anód (+) felé mozognak.</div></div>
+    </div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">08</span>
+        <div class="kerdes-body"><div class="kerdes-text">Mik az elektródák? Hogyan nevezik őket?</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner">Az elektródák fémes vezetők, amelyeken keresztül az áram belép vagy kilép az elektrolitba.<br><br>
+        <strong>Anód (+):</strong> pozitív elektróda – ide vándorolnak a negatív ionok (anionok)<br>
+        <strong>Katód (−):</strong> negatív elektróda – ide vándorolnak a pozitív ionok (kationok)
+      </div></div>
+    </div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">09</span>
+        <div class="kerdes-body"><div class="kerdes-text">Mi az elektrolízis?</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner">Az elektrolízis egy <strong>elektromos áram által előidézett kémiai bomlási folyamat</strong> elektrolitban. Az ionok az elektródákhoz vándorolnak és ott leválnak vagy reakcióba lépnek. Pl. vízből hidrogén és oxigén válik szét.</div></div>
+    </div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">10</span>
+        <div class="kerdes-body"><div class="kerdes-text">Milyen eszközök, berendezések, folyamatok működnek az elektromos áram kémiai hatása alapján?</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner">
+        • <strong>Vízbontó készülék</strong> – víz → hidrogén + oxigén<br>
+        • <strong>Alumíniumgyártás</strong> – alumínium-oxid elektrolízise<br>
+        • <strong>Galvánelemek</strong> – kémiai energia → elektromos energia<br>
+        • <strong>Akkumulátor</strong> – tölthető galváncella<br>
+        • <strong>Galvanizálás</strong> – fém bevonása más fémmel (pl. aranyozás, nikkelezés)
+      </div></div>
+    </div>
+
+    <div class="kerdes-section-title">⚡ Biológiai hatás</div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">11</span>
+        <div class="kerdes-body"><div class="kerdes-text">Mi az elektrolit? (Ismétlés – az élő szervezetben is van!)</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner">Ionokat tartalmazó vezető közeg. Az élő szervezetben a <strong>vér, szövetfolyadék, nyirok</strong> mind elektrolitok – ezért vezeti az emberi test is az elektromos áramot.</div></div>
+    </div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">12</span>
+        <div class="kerdes-body"><div class="kerdes-text">Miért van hatással az elektromos áram az élő szervezetekre?</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner">Az élő szervezet elektrolitot tartalmaz (vér, szövetfolyadék), ezért <strong>vezeti az áramot</strong>. Az áram az idegrostokban és izomsejtekben elektromos jeleket kelt, amelyek <strong>akaratlan izomösszehúzódásokat</strong> és egyéb élettani hatásokat okoznak.</div></div>
+    </div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">13</span>
+        <div class="kerdes-body"><div class="kerdes-text">Miben nyilvánul meg az elektromos áram élettani hatása?</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner">
+        • Bizsergés, fájdalom<br>
+        • Akaratlan izomösszehúzódás<br>
+        • Égési sérülés<br>
+        • Légzésmegállás<br>
+        • Szívkamra-fibrilláció (halálos lehet)<br><br>
+        Gyógyászatban is alkalmazzák: <strong>EKG</strong> (szívritmus mérés), <strong>pacemaker</strong> (szívritmus szabályozás), <strong>defibrillátor</strong> (szívritmus visszaállítás).
+      </div></div>
+    </div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">14</span>
+        <div class="kerdes-body"><div class="kerdes-text">Ki vette észre, hogy az elektromos áramnak hatása van az élő szervezetekre?</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner"><strong>Luigi Galvani</strong> (18. század, olasz orvos és fizikus). Megfigyelte, hogy egy szikra hatására a béka levágott lába összehúzódott. Ebből következtette, hogy az áramnak biológiai hatása van – erről nevezzük galvanizálásnak a technikát.</div></div>
+    </div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">15</span>
+        <div class="kerdes-body"><div class="kerdes-text">Milyen erősségű áramnak van hatása és mi az a hatás?</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner">
+        <strong>~1 mA:</strong> bizsergés érzet<br>
+        <strong>5–10 mA:</strong> fájdalmas érzés<br>
+        <strong>10–25 mA:</strong> görcsös izomösszehúzódás – nem tudja elengedni a vezéket<br>
+        <strong>25–100 mA:</strong> légzésmegállás, eszméletvesztés<br>
+        <strong>≥ 100 mA:</strong> szívkamra-fibrilláció → halálos lehet
+      </div></div>
+    </div>
+
+    <div class="kerdes-section-title">📋 Eszközök csoportosítása</div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">16</span>
+        <div class="kerdes-body"><div class="kerdes-text">Csoportosítsd: vízforraló, vízbontó, hagyományos izzó, alumíniumgyártás, vasaló, mikrohullámú sütő, kenyérpirító, defibrillátor, galvánelemek, mosógép, akkumulátor, hajszárító, pacemaker, elektromos főzőlap, hajvasaló, LED, villanysütő, villanybojler, EKG, galvanizálás</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner">
+        <strong style="color:var(--red)">🔥 Hőhatás:</strong> vízforraló, vasaló, kenyérpirító, hagyományos izzó, hajszárító, elektromos főzőlap, hajvasaló, villanysütő, villanybojler<br><br>
+        <strong style="color:var(--green)">⚗️ Kémiai hatás:</strong> vízbontó, alumíniumgyártás, galvánelemek, akkumulátor, galvanizálás<br><br>
+        <strong style="color:var(--purple)">⚡ Biológiai hatás:</strong> defibrillátor, pacemaker, EKG<br><br>
+        <strong style="color:var(--amber)">🌀 Hő + egyéb:</strong> mikrohullámú sütő (elektromágneses), mosógép (mechanikai)<br><br>
+        <strong style="color:var(--blue)">💡 Nem hőhatás:</strong> LED – elektrolumineszcencia (fény nem hő által keletkezik)
+      </div></div>
+    </div>
+
+    <div class="kerdes-section-title">📐 Alapfogalmak</div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">17</span>
+        <div class="kerdes-body"><div class="kerdes-text">Mi az ellenállás?</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner">Az ellenállás az anyag <strong>áramvezetéssel szembeni akadályozó képessége</strong>. Függ az anyag fajtájától (fajlagos ellenállás), hosszától, keresztmetszetétől és hőmérsékletétől. Mértékegysége: <strong>Ohm (Ω)</strong>.<span class="af">R = U / I</span></div></div>
+    </div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">18</span>
+        <div class="kerdes-body"><div class="kerdes-text">Mit értünk az áram irányán?</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner">Az áram <strong>technikai iránya</strong> a pozitív pólustól a negatív pólus felé mutat (külső áramkörben). Az <strong>elektronok valódi mozgása</strong> ezzel ellentétes – a negatív pólusból a pozitív felé haladnak. A technikai irányt Franklin idejéből örököltük, mielőtt az elektron természetét megismertük.</div></div>
+    </div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">19</span>
+        <div class="kerdes-body"><div class="kerdes-text">Mi az elektromos áram?</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner"><strong>Töltéshordozók rendezett mozgása</strong> egy vezető anyagban. Fémekben: szabad elektronok; elektrolitban: ionok; gázban: ionok és elektronok. Fennmaradásához folyamatos hajtóerő (feszültségforrás) szükséges.</div></div>
+    </div>
+
+    <div class="kerdes-item">
+      <div class="kerdes-q" onclick="toggleAnswer(this.closest('.kerdes-item'))">
+        <span class="kerdes-num">20</span>
+        <div class="kerdes-body"><div class="kerdes-text">Mi az áramerősség?</div></div>
+        <span class="kerdes-check" onclick="event.stopPropagation();toggleDone(this.closest('.kerdes-item'))"></span>
+      </div>
+      <div class="answer-panel"><div class="answer-inner">Az áramerősség megmutatja, <strong>egységnyi idő alatt mennyi töltés áramlik át</strong> az áramköri keresztmetszeten.<span class="af">I = Q / t</span>Mértékegysége: <strong>Amper (A)</strong>. Mérőeszköze az ampermérő – sorba kell kötni az áramkörbe.</div></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function fmt(n) {
+  if (!isFinite(n) || isNaN(n)) return '—';
+  if (Math.abs(n) >= 10000) return n.toFixed(0);
+  if (Math.abs(n) >= 100) return n.toFixed(1);
+  if (Math.abs(n) >= 1) return parseFloat(n.toFixed(3)).toString();
+  return n.toPrecision(3);
+}
+
+function calc() {
+  const u = parseFloat(document.getElementById('inp-u').value);
+  const i = parseFloat(document.getElementById('inp-i').value);
+  const r = parseFloat(document.getElementById('inp-r').value);
+  const filled = [!isNaN(u), !isNaN(i), !isNaN(r)].filter(Boolean).length;
+  if (filled < 2) { document.getElementById('ohm-result').style.display = 'none'; return; }
+  let cu=u, ci=i, cr=r, formula='';
+  if (isNaN(cu) && !isNaN(ci) && !isNaN(cr)) { cu=ci*cr; formula='U = I · R = '+fmt(ci)+' · '+fmt(cr)+' = '+fmt(cu)+' V'; }
+  else if (isNaN(ci) && !isNaN(cu) && !isNaN(cr)) { ci=cu/cr; formula='I = U / R = '+fmt(cu)+' / '+fmt(cr)+' = '+fmt(ci)+' A'; }
+  else if (isNaN(cr) && !isNaN(cu) && !isNaN(ci)) { cr=cu/ci; formula='R = U / I = '+fmt(cu)+' / '+fmt(ci)+' = '+fmt(cr)+' Ω'; }
+  document.getElementById('out-u').textContent = fmt(cu);
+  document.getElementById('out-i').textContent = fmt(ci);
+  document.getElementById('out-r').textContent = fmt(cr);
+  document.getElementById('out-p').textContent = fmt(cu * ci);
+  document.getElementById('ohm-formula').textContent = formula;
+  document.getElementById('ohm-result').style.display = '';
+}
+
+function clearOhm() {
+  ['inp-u','inp-i','inp-r'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('ohm-result').style.display = 'none';
+}
+
+function calcR() {
+  const r1 = parseFloat(document.getElementById('r1').value);
+  const r2 = parseFloat(document.getElementById('r2').value);
+  const r3 = parseFloat(document.getElementById('r3').value);
+  const type = document.getElementById('conn-type').value;
+  const vals = [r1,r2,r3].filter(v => !isNaN(v) && v > 0);
+  if (vals.length < 2) { document.getElementById('r-result').style.display='none'; return; }
+  let res, formula;
+  if (type === 'soros') {
+    res = vals.reduce((a,b) => a+b, 0);
+    formula = 'R = ' + vals.map(fmt).join(' + ') + ' = ' + fmt(res) + ' Ω';
+  } else {
+    res = 1 / vals.reduce((a,b) => a + 1/b, 0);
+    formula = '1/R = ' + vals.map(v => '1/'+fmt(v)).join(' + ') + ' → R = ' + fmt(res) + ' Ω';
+  }
+  document.getElementById('r-out').textContent = fmt(res);
+  document.getElementById('r-formula').textContent = formula;
+  document.getElementById('r-result').style.display = '';
+}
+
+function toggleAnswer(item) {
+  item.querySelector('.answer-panel').classList.toggle('open');
+}
+
+function toggleDone(item) {
+  item.classList.toggle('done');
+  updateProgress();
+}
+
+function updateProgress() {
+  const all = document.querySelectorAll('.kerdes-item');
+  const done = document.querySelectorAll('.kerdes-item.done');
+  const pct = all.length ? Math.round(done.length / all.length * 100) : 0;
+  document.getElementById('prog-label').textContent = done.length + ' / ' + all.length + ' teljesítve';
+  document.getElementById('prog-bar').style.width = pct + '%';
+}
+
+function expandAll() { document.querySelectorAll('.answer-panel').forEach(p => p.classList.add('open')); }
+function collapseAll() { document.querySelectorAll('.answer-panel').forEach(p => p.classList.remove('open')); }
+function resetAll() {
+  document.querySelectorAll('.kerdes-item.done').forEach(el => el.classList.remove('done'));
+  collapseAll();
+  updateProgress();
+}
+
+updateProgress();
+</script>
+</body>
+</html>
